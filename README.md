@@ -1,6 +1,4 @@
-# Containerizando
-
-![Capa](cover.png "Capa")
+![Containerizando sua aplicação](cover.png "Containerizando capa")
 
 ## Introdução
 
