@@ -1,14 +1,14 @@
-# containerizando
+# Containerizando
 
 ![Capa](cover.png "Capa")
 
-## introdução
+## Introdução
 
 Docker é um conjunto de produtos de plataforma como serviço que usam virtualização de nível de sistema operacional para entregar software em pacotes chamados contêineres. Os contêineres são isolados uns dos outros e agrupam seus próprios softwares, bibliotecas e arquivos de configuração
 
-## projeto containerizando
+## Projeto containerizando
 
-1. gerar pacote containerizando no ![start spring](https://start.spring.io/) com as dependencias
+1. gerar pacote containerizando no [start spring](https://start.spring.io/) com as dependencias
 
 * jpa
 * postgres
@@ -53,9 +53,7 @@ mvn spring-boot:run
 
 O start foi feito com sucesso? Retornou algum erro de conexão com o banco de dados?
 
-Acesso em 
-
-http://localhost:8080/actuator/health
+Acesso em: http://localhost:8080/actuator/health
 
 9. criar dockerfile para app
 
@@ -117,12 +115,12 @@ criar N redes para organizar a comunicação, quando nenhuma rede é criada, por
 Em cada container network o docker cria um serviço dns para facilitar a comunicação entre os containers, e com isso é possível a 
 conexão entre containers utilizando o service name, veja a string de conexão da aplicação com o comando:
 
+```bash
 docker exec -ti containerizando_containerizando_1 env
+```
 
 Nenhum dado adicional além do service name do postgres foi utilizado e o actuator mostra que a conectividade entre aplicação e banco de dados
-está ok.
-
-http://localhost:8080/actuator/health
+está ok. Verifique novamente em: http://localhost:8080/actuator/health
 
 E como essa comunicação ocorre?
 
@@ -159,11 +157,9 @@ Banco de dados:
 docker inspect containerizando_postgres_1 -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
 ```
 
-## analizando a imagem utilizando o dive
+## Analizando a imagem utilizando o dive
 
-O dive é uma ferramenta para explorar uma imagem docker, conteúdo de camada e descobrir maneiras de reduzir o tamanho de sua imagem Docker / OCI. (open container iniciative)
-
-[documentação oficial](https://github.com/wagoodman/dive)
+O [dive](https://github.com/wagoodman/dive) é uma ferramenta para explorar uma imagem docker, conteúdo de camada e descobrir maneiras de reduzir o tamanho de sua imagem Docker / OCI. (open container iniciative)
 
 Executando:
 
@@ -195,8 +191,6 @@ docker run --rm -it \
 
 O objetivo dessa ferramenta é tornar as imagens Docker ou OCI mais eficientes, alguns aspectos para ter em mente durante a construção:
 
-
-[link](https://docs.docker.com/storage/storagedriver/)
 
 * Copy-on-write
 
@@ -305,7 +299,7 @@ ADD ./scripts/pm2.sh /etc/service/pm2/run
 RUN chmod -R 777 /etc/service/pm2
 ```
 
-## docker push
+## Docker push
 
 Com uma imagem eficiente e executando a aplicação corretamente, o próximo passo lógico e disponibiliza-la para execução além da estação
 de trabalho na qual ela foi gerada, para isso hospedamos essa imagem no que chamamos de container registry.
@@ -329,7 +323,7 @@ docker push rmnobarra/containerizando
 Agora a imagem com a aplicação está disponivel para qualquer um que tenha acesso a internet.
 
 
-### finalizando
+## Finalizando
 
 Para saber mais:
 
