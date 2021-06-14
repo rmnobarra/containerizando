@@ -1,15 +1,6 @@
 version: '3'
 services:
 
-    containerizando:
-        image: rmnobarra/containerizando
-        environment:
-          DATABASE_URL: "jdbc:postgresql://poscontainerizandotgres:5432/db"
-        depends_on:
-          - "postgres"
-        ports:
-          - 8080:8080    
-
     postgres:
         image: 'postgres:alpine'
         volumes:

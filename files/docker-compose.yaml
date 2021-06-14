@@ -2,6 +2,7 @@ version: '3'
 services:
 
     containerizando:
+        container_name: containerizando
         image: rmnobarra/containerizando
         environment:
           DATABASE_URL: "jdbc:postgresql://postgres:5432/db"
@@ -11,6 +12,7 @@ services:
           - 8080:8080    
 
     postgres:
+        container_name: postgres
         image: 'postgres:alpine'
         volumes:
           - postgres-volume:/var/lib/postgresql/data
@@ -20,6 +22,6 @@ services:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: db
-          POSTGRES_HOST: postgres    
+              
 volumes:
-  postgres-volume:
+ postgres-volume:
