@@ -6,7 +6,7 @@ Docker é um conjunto de produtos de plataforma como serviço que usam virtualiz
 
 ## Projeto containerizando
 
-1. gerar pacote containerizando no [start spring](https://start.spring.io/) com as dependencias
+1. gerar pacote containerizando no [start spring](https://start.spring.io/) com as dependências:
 
 * jpa
 * postgres
@@ -21,15 +21,58 @@ Docker é um conjunto de produtos de plataforma como serviço que usam virtualiz
 unzip containerizando.zip
 ```
 
-4. configurar application.properties para o postgres
+4. configurar application.properties para o postgres e para o actuator:
 
-5. configurar pom para actuator
+```xml
+spring.jpa.database=POSTGRESQL
+spring.datasource.platform=postgres
+spring.database.driverClassName=org.postgresql.Driver
+spring.datasource.username=postgres
+spring.datasource.password=password
+spring.datasource.url=jdbc:postgresql://localhost:5432/db
+management.endpoints.health.sensitive=false
+management.health.db.enabled=true
+management.health.defaults.enabled=true
+management.endpoint.health.show-details=always
+```
+
+5. configurar pom para actuator:
+
+```xml
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+				  <artifactId>spring-boot-starter-actuator</artifactId>
+		  </dependency>
+```
 
 ## Docker compose 
 
 Ferramenta para definir e executar multiplos containers de forma declarativa, utilizando arquivos no formato yaml
 
-6. executar compose para subir o banco de dados
+6. Crie e execute este compose para subir o banco de dados, necessário para o corrreto startup de nossa aplicação:
+
+docker-compose:
+
+```yaml
+version: '3'
+services:
+
+    postgres:
+        image: 'postgres:alpine'
+        volumes:
+          - postgres-volume:/var/lib/postgresql/data
+        ports:
+          - 5432:5432
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: db
+          POSTGRES_HOST: postgres    
+volumes:
+  postgres-volume:
+```
+
+start compose:
 
 ```bash
 docker-compose up -d
@@ -53,7 +96,15 @@ O start foi feito com sucesso? Retornou algum erro de conexão com o banco de da
 
 Acesso em: http://localhost:8080/actuator/health
 
-9. criar dockerfile para app
+9. crie este Dockerfile para a aplicação:
+
+```Dockerfile
+FROM openjdk:11.0.7-jre-slim-buster
+
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} application.jar
+ENTRYPOINT ["java", "-jar", "/application.jar"]
+```
 
 10. build
 
@@ -64,7 +115,7 @@ docker image build -t rmnobarra/containerizando:latest .
 11. executando o container:
 
 ```bash
-docker container run -p 8080:8080 -d rmnobarra/containerizando --name containerizando
+docker container run -p 8080:8080 rmnobarra/containerizando --name containerizando
 ```
 
 Verificar o status do serviço em http://localhost:8080/actuator/health
@@ -78,13 +129,61 @@ alterar a string de conexão, permitindo que o container da aplicação fale com
 13. Alterar a string de conexão no application.properties, tornando-a flexivel tanto em desenvolvimento quanto em execução, utilizando
 variáveis de ambiente
 
-14. Adicionar o containerizando no docker compose "docker-compose2.yaml"
+De:
+
+```xml
+spring.datasource.url=jdbc:postgresql://localhost:5432/db
+```
+
+para:
+
+```xml
+spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5432/db}
+```
+
+14. Adicionar o containerizando no docker compose:
+
+```Dockerfile
+version: '3'
+services:
+
+    containerizando:
+        container_name: containerizando
+        image: rmnobarra/containerizando
+        environment:
+          DATABASE_URL: "jdbc:postgresql://postgres:5432/db"
+        depends_on:
+          - "postgres"
+        ports:
+          - 8080:8080    
+
+    postgres:
+        container_name: postgres
+        image: 'postgres:alpine'
+        volumes:
+          - postgres-volume:/var/lib/postgresql/data
+        ports:
+          - 5432:5432
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: db
+              
+volumes:
+ postgres-volume:
+```
 
 15. validar o compose com
 
 docker-compose config
 
-16. iniciar o container do containerizando
+16. iniciar o container do containerizando:
+
+```bash
+docker-compose up -d 
+```
+
+Verifique novamente o status do serviço em http://localhost:8080/actuator/health
 
 Por quê a conexão com o banco de dados ainda não funciona?
 
@@ -99,7 +198,7 @@ Porque o build da imagem reflete o seu estado naquele momento, cada alteração 
 docker image build -t rmnobarra/containerizando:latest .
 ```
 
-docker-compose up -d containerizando
+docker-compose down && docker-compose up
 
 É possível iniciar ou derrubar determinado container dentro de um docker-compose utilizando o service name. Útil quando se tem diversos
 serviços rodando no mesmo compose
@@ -114,7 +213,7 @@ Em cada container network o docker cria um serviço dns para facilitar a comunic
 conexão entre containers utilizando o service name, veja a string de conexão da aplicação com o comando:
 
 ```bash
-docker exec -ti containerizando_containerizando_1 env
+docker exec -ti containerizando env
 ```
 
 Nenhum dado adicional além do service name do postgres foi utilizado e o actuator mostra que a conectividade entre aplicação e banco de dados
@@ -147,12 +246,12 @@ Veja o ip nas regras para o banco de dados (porta 5432) e para a aplicação (80
 
 Aplicação:
 ```bash
-docker inspect containerizando_containerizando_1 -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
+docker inspect containerizando -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
 ```
 
 Banco de dados:
 ```bash
-docker inspect containerizando_postgres_1 -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
+docker inspect postgres -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
 ```
 
 ## Analizando a imagem utilizando o dive
