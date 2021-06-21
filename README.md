@@ -441,3 +441,5 @@ Para saber mais:
 [Multi Stage build](https://docs.docker.com/develop/develop-images/multistage-build/)
 
 [Melhores praticas para Dockerfile](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
+
+---
