@@ -635,6 +635,8 @@ No arquivo deployment em containers
 ```
 e altere a container port para 8080
 
+e em services altere a targetPort para 8080
+
 ## Role para o codebuild
 
 Crie uma role com as policies
@@ -668,6 +670,9 @@ inline readonly eks
 
 ## Codebuild
 
+kubectl expose deployment/containerizando --type LoadBalancer
+
+k port-forward <pod> 8080:80
 ## Finalizando
 
 Adicione o repo https://github.com/rmnobarra/containerizando.git como source, branche k8s, marque a caixa
