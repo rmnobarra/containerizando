@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: public.ecr.aws/i2c7a5l2/lab/containerizando
+  repository: public.ecr.aws/i2c7a5l2/lab
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
