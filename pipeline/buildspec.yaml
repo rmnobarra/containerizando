@@ -13,6 +13,7 @@ phases:
       
   build:
     commands:
+      - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
       - ./mvnw package
       - docker build -t lab .
       - docker image ls
