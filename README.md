@@ -624,12 +624,47 @@ application:
 Ainda no values, altere "image" para public.ecr.aws/i2c7a5l2/lab/containerizando
 e a tag para "latest"
 
+No arquivo deployment em containers
+
+```yaml
+          envFrom:
+            - configMapRef:
+                name: containerizando-cm
+            - secretRef:
+                name: containerizando-secrets
+```
+e altere a container port para 8080
+
 ## Role para o codebuild
 
 Crie uma role com as policies
 
 CloudWatchFullAccess
 AmazonElasticContainerRegistryPublicPowerUser
+
+inline readonly eks
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "EKSREADONLY",
+            "Effect": "Allow",
+            "Action": [
+                "eks:DescribeNodegroup",
+                "eks:DescribeUpdate",
+                "eks:DescribeCluster"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "STSASSUME",
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": "arn:aws:iam::44755xxxxxxx:role/EksCodeBuildkubectlRole"
+        }
+    ]
+}
 
 ## Codebuild
 
