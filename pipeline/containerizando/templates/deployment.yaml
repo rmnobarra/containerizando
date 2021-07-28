@@ -38,10 +38,11 @@ spec:
               containerPort: 8080
               protocol: TCP
           envFrom:
-            - configMapRef:
-                name: containerizando-cm
-            - secretRef:
-                name: containerizando-secrets
+          - configMapRef:
+              name: containerizando-cm
+          - secretRef:
+              name: containerizando-secrets
+          resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
