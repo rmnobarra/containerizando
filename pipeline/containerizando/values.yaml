@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: public.ecr.aws/i2c7a5l2/lab
+  repository: public.ecr.aws/i2c7a5l2/containerizando
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
@@ -80,5 +80,5 @@ affinity: {}
 
 application:
   DATABASE_USER: myuser
-  DATABASE_URL: jdbc:postgresql://lab.chpeyn5uxxax.us-east-1.rds.amazonaws.com:5432/mydb
+  DATABASE_URL: jdbc:postgresql://containerizando.chpeyn5uxxax.us-east-1.rds.amazonaws.com/mydb
   DATABASE_PASS: mypass
