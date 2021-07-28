@@ -628,9 +628,20 @@ application:
 Ainda no values, altere "image" para public.ecr.aws/i2c7a5l2/lab/containerizando
 e a tag para "latest"
 
+## Role para o codebuild
+
+Crie uma role com as policies
+
+
+## Codebuild
 
 ## Finalizando
 
+Adicione o repo https://github.com/rmnobarra/containerizando.git como source, branche k8s, marque a caixa
+"Privileged" Enable this flag if you want to build Docker images or want your builds to get elevated privileges
+
+
+Em environment, selecione Ubuntu, runtime Standard e image 5.0
 Para saber mais:
 
 [Docker para desenvolvedores](https://leanpub.com/dockerparadesenvolvedores)
@@ -651,4 +662,5 @@ Para saber mais:
 
 [Melhores praticas para Dockerfile](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 
+[Criando role para interagir com o eks](https://www.eksworkshop.com/intermediate/220_codepipeline/role/)
 ---
