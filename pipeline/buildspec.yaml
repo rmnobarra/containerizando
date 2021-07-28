@@ -10,13 +10,6 @@ phases:
       - chmod +x /bin/kubectl /bin/helm ./aws-iam-authenticator
       - export PATH=$PWD/:$PATH
       - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
-
-  pre_build:
-    commands:
-      - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) $URL_REPO
-      - sh gradlew build -x test
-      - echo exporting kubeconfig
-      - export KUBECONFIG=$HOME/.kube/config
       
   build:
     commands:
