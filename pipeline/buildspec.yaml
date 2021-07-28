@@ -14,8 +14,10 @@ phases:
   build:
     commands:
       - ./mvnw package
-      - docker build -t lab . 
-      - docker tag lab:latest public.ecr.aws/i2c7a5l2/lab:latest
+      - docker build -t lab .
+      - docker image ls
+      - docker tag lab public.ecr.aws/i2c7a5l2/lab:latest
+      - docker image ls
 
   post_build:
     commands:
