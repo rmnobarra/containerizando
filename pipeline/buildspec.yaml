@@ -24,6 +24,6 @@ phases:
     commands:
       - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) public.ecr.aws/i2c7a5l2/lab
       - docker push public.ecr.aws/i2c7a5l2/lab:latest
-      - helm lint pipeline/helm/containerizando --values pipeline/helm/containerizando/values.yaml
+      - helm lint pipeline/containerizando --values pipeline/containerizando/values.yaml
       - aws eks update-kubeconfig --name zup-sandbox-edu-lab --role-arn arn:aws:iam::208471844409:role/CodeBuildKubectlRole
-      - helm upgrade -i containerizando pipeline/helm/containerizando/ --values pipeline/helm/containerizando/values.yaml
+      - helm upgrade -i containerizando pipeline/containerizando/ --values pipeline/containerizando/values.yaml

@@ -548,27 +548,23 @@ phases:
       - chmod +x /bin/kubectl /bin/helm ./aws-iam-authenticator
       - export PATH=$PWD/:$PATH
       - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
-
-  pre_build:
-    commands:
-      - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) $URL_REPO
-      - sh gradlew build -x test
-      - echo exporting kubeconfig
-      - export KUBECONFIG=$HOME/.kube/config
       
   build:
     commands:
+      - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
       - ./mvnw package
-      - docker build -t containerizando . 
-      - docker tag containerizando:latest public.ecr.aws/i2c7a5l2/lab/containerizando:latest
+      - docker build -t lab .
+      - docker image ls
+      - docker tag lab public.ecr.aws/i2c7a5l2/lab:latest
+      - docker image ls
 
   post_build:
     commands:
       - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) public.ecr.aws/i2c7a5l2/lab
-      - docker push public.ecr.aws/i2c7a5l2/lab/containerizando:latest
-      - helm lint pipeline/helm/containerizando --values pipeline/helm/containerizando/values.yaml
+      - docker push public.ecr.aws/i2c7a5l2/lab:latest
+      - helm lint pipeline/containerizando --values pipeline/containerizando/values.yaml
       - aws eks update-kubeconfig --name zup-sandbox-edu-lab --role-arn arn:aws:iam::208471844409:role/CodeBuildKubectlRole
-      - helm upgrade -i containerizando pipeline/helm/containerizando/ --values pipeline/helm/containerizando/values.yaml
+      - helm upgrade -i containerizando pipeline/containerizando/ --values pipeline/containerizando/values.yaml
 ```
 
 ## helm
