@@ -419,6 +419,215 @@ docker push rmnobarra/containerizando
 
 Agora a imagem com a aplicação está disponivel para qualquer um que tenha acesso a internet.
 
+## Evoluindo para deploy no aws eks
+
+Temos a estrutura do helm pronta, porém algumas perguntas premissas precisam ser atendidas.
+
+* A aplicação precisa de um banco de dados postgres para funcionar
+
+* A aplicação recebe os valores do banco de dados nas variáveis DATABASE_USER, DATABASE_PASS e DATABASE_URL
+
+* Precisa gerar o artefato container e envia-lo para um repositório público no aws ecr
+
+* Precisa deployar a aplicação em um cluster eks
+
+* Precisa utilizar um ou mais serviços aws developer tools para executar essas atividades
+
+## Database
+
+22. No campo de busca na console de gerenciamento na aws, digite "rds".
+
+![rds](img/rds01.png "buscando o serviço rds na aws")
+
+23. Na coluna no lado esquerdo, clique em Databases
+
+![database rds](img/rds02.png "Clicando em databases")
+
+
+24. Clique em Create Database
+
+![crinado database](img/rds03.png "criando database")
+
+25. Em engine type, selecione postgres, version 12.5-R1, templates "Free tier"
+
+![db postgres parte 1](img/rds04.png "db postgres parte 1")
+
+26. Em settings, defina um nome para o banco de dados e uma senha (forte) para ele.
+
+![db postgres parte 2](img/rds05.png "db postgres parte 2")
+
+27. DB instance class, Storage e availability & durability, deixe como o padrão
+
+![db postgres parte 3](img/rds06.png "db postgres parte 3")
+
+28. Em Connectivity, selecione sua vpc e sub rede, habilite o "Public Access" e selecione um Security Group
+
+![db postgres parte 4](img/rds07.png "db postgres parte 4")
+
+29. Deixe os demais itens como default e clique em Create Database
+
+![db postgres parte 5](img/rds08.png "db postgres parte 5")
+
+*Este processo pode demorar um pouco*
+
+Clique na database criada e anote o endereço do endpoint
+
+Acesse o banco
+
+psql --host <endpoint> -U postgres -d postgres -p 5432
+
+crie a database
+
+create database mydb;
+
+crie o usuario
+
+create user myuser with encrypted password 'mypass';
+
+defina permissão do user para a databse
+
+create user myuser with encrypted password 'mypass';
+
+## ECR
+
+30. No campo de busca na console de gerenciamento na aws, digite "ecr". Clique em Elastic Container Registry
+
+![ecr](img/ecr01.png "buscando o serviço ecr na aws")
+
+31. Clique na aba "Public" e em create repository
+
+![ecr 2](img/ecr02.png "Acessando menu para criar repositório")
+
+32. Em Detail, defina um nome para o registry. As demais opções deixe como padrão.
+
+![ecr 3](img/ecr02.png "Criando repositório")
+
+## build e deploy
+
+## eks
+
+Para o codebuild interagir com o cluster eks, é preciso criar uma iam role
+
+TRUST="{ \"Version\": \"2012-10-17\", \"Statement\": [ { \"Effect\": \"Allow\", \"Principal\": { \"AWS\": \"arn:aws:iam::208471844409:root\" }, \"Action\": \"sts:AssumeRole\" } ] }"
+
+echo '{ "Version": "2012-10-17", "Statement": [ { "Effect": "Allow", "Action": "eks:Describe*", "Resource": "*" } ] }' > /tmp/iam-role-policy
+
+aws iam create-role --role-name CodeBuildKubectlRole --assume-role-policy-document "$TRUST" --output text --query 'Role.Arn'
+
+aws iam put-role-policy --role-name CodeBuildKubectlRole --policy-name eks-describe --policy-document file:///tmp/iam-role-policy
+
+modificando aws-auth configmap
+
+ROLE="    - rolearn: arn:aws:iam::208471844409:role/CodeBuildKubectlRole\n      username: build\n      groups:\n        - system:masters"
+
+kubectl get -n kube-system configmap/aws-auth -o yaml | awk "/mapRoles: \|/{print;print \"$ROLE\";next}1" > /tmp/aws-auth-patch.yml
+
+kubectl patch configmap/aws-auth -n kube-system --patch "$(cat /tmp/aws-auth-patch.yml)"
+
+
+## codebuild
+
+Crie o arquivo buildspec.yaml
+
+```bash
+touch pipeline/containerizando/buildspec.yaml
+```
+
+Adicione o conteúdo
+
+```yaml
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - curl -o /bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl
+      - curl -sS -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
+      - wget -qO- https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz | tar xvz
+      - mv linux-amd64/helm /bin/helm
+      - chmod +x /bin/kubectl /bin/helm ./aws-iam-authenticator
+      - export PATH=$PWD/:$PATH
+      - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
+
+  pre_build:
+    commands:
+      - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) $URL_REPO
+      - sh gradlew build -x test
+      - echo exporting kubeconfig
+      - export KUBECONFIG=$HOME/.kube/config
+      
+  build:
+    commands:
+      - ./mvnw package
+      - docker build -t containerizando . 
+      - docker tag containerizando:latest public.ecr.aws/i2c7a5l2/lab/containerizando:latest
+
+  post_build:
+    commands:
+      - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) public.ecr.aws/i2c7a5l2/lab
+      - docker push public.ecr.aws/i2c7a5l2/lab/containerizando:latest
+      - helm lint pipeline/helm/containerizando --values pipeline/helm/containerizando/values.yaml
+      - aws eks update-kubeconfig --name zup-sandbox-edu-lab --role-arn arn:aws:iam::208471844409:role/CodeBuildKubectlRole
+      - helm upgrade -i containerizando pipeline/helm/containerizando/ --values pipeline/helm/containerizando/values.yaml
+```
+
+## helm
+Estrutura para deployment
+
+```bash
+mdkir pipeline
+```
+
+23. Cria helm
+```bash
+helm create pipeline/containerizando
+```
+
+24. Cria configmap.yaml
+touch pipeline/containerizando/templates/configmap.yaml
+
+25. Adicione o conteúdo
+
+```yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: containerizando-cm
+data:
+  DATABASE_USER: "{{ .Values.application.DATABASE_USER }}"
+  DATABASE_URL: "{{ .Values.application.DATABASE_URL }}"
+```
+
+26. Cria secrets.yaml
+
+```bash
+touch pipeline/containerizando/templates/secrets.yaml
+```
+
+27. Adicione o conteúdo
+```yaml
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: containerizando-secrets
+type: Opaque
+data:
+  DATABASE_PASS: {{ .Values.application.DATABASE_PASS | b64enc | quote  }}
+```
+
+28. Em pipeline/containerizando/values.yaml adicione no final do arquivo
+
+```yaml
+application:
+  DATABASE_USER: myuser
+  DATABASE_URL: jdbc:postgresql://lab.chpeyn5uxxax.us-east-1.rds.amazonaws.com:5432/mydb
+  DATABASE_PASS: mypass
+```
+
+Ainda no values, altere "image" para public.ecr.aws/i2c7a5l2/lab/containerizando
+e a tag para "latest"
+
 
 ## Finalizando
 
