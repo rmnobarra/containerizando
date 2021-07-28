@@ -39,12 +39,12 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /actuator/health
+              port: 8080
           readinessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /actuator/health
+              port: 8080
           envFrom:
           - configMapRef:
               name: containerizando-cm
