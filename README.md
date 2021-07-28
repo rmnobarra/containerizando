@@ -632,6 +632,8 @@ e a tag para "latest"
 
 Crie uma role com as policies
 
+CloudWatchFullAccess
+AmazonElasticContainerRegistryPublicPowerUser
 
 ## Codebuild
 
