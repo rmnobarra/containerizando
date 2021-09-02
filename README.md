@@ -670,7 +670,7 @@ Adicione a inline readonly eks (colocar a arn da role criada para interagir com 
             "Sid": "STSASSUME",
             "Effect": "Allow",
             "Action": "sts:AssumeRole",
-            "Resource": "arn:aws:iam::44755xxxxxxx:role/CodeBuildKubectlRole"
+            "Resource": "arn:aws:iam::208471844409:role/CodeBuildKubectlRole"
         }
     ]
 }
