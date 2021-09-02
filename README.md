@@ -626,7 +626,7 @@ application:
   DATABASE_PASS: mypass
 ```
 
-Ainda no values, altere "image" para public.ecr.aws/i2c7a5l2/lab/containerizando
+Ainda no values, altere "image" para public.ecr.aws/i2c7a5l2/containerizando
 e a tag para "latest"
 
 No arquivo deployment em containers
@@ -720,10 +720,13 @@ A primeira deve conter sua conta no dockerhub e a segunda, seu token para acesso
 
 ![codebuild](img/codebuild09.png "Criando projeto no codebuild")
 
-37. Altere o tipo de service do containerizando
+37. Altere o tipo de service do containerizando para LoadBalancer
 
 ```bash
-kubectl expose deployment/containerizando --type LoadBalancer
+kubectl edit svc containerizando
+
+:s/ClusterIP/LoadBalancer/g
+
 ```
 
 38. Valide via browser se tudo correu certo.
