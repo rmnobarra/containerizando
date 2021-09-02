@@ -752,4 +752,7 @@ Para saber mais:
 
 [Melhores praticas para Dockerfile](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 
+[Criando role para interagir com o eks](https://www.eksworkshop.com/intermediate/220_codepipeline/role/)
+
+
 ---
