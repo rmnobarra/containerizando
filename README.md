@@ -628,7 +628,60 @@ application:
 Ainda no values, altere "image" para public.ecr.aws/i2c7a5l2/lab/containerizando
 e a tag para "latest"
 
+No arquivo deployment em containers
 
+```yaml
+          envFrom:
+            - configMapRef:
+                name: containerizando-cm
+            - secretRef:
+                name: containerizando-secrets
+```
+e altere a container port para 8080
+
+e em services altere a targetPort para 8080
+
+## Role para o codebuild
+
+Crie uma role com as policies
+
+CloudWatchFullAccess
+AmazonElasticContainerRegistryPublicPowerUser
+
+inline readonly eks
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "EKSREADONLY",
+            "Effect": "Allow",
+            "Action": [
+                "eks:DescribeNodegroup",
+                "eks:DescribeUpdate",
+                "eks:DescribeCluster"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "STSASSUME",
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": "arn:aws:iam::44755xxxxxxx:role/EksCodeBuildkubectlRole"
+        }
+    ]
+}
+	
+kubectl expose deployment/containerizando --type LoadBalancer
+
+k port-forward <pod> 8080:80
+	
+Adicione o repo https://github.com/rmnobarra/containerizando.git como source, branche k8s, marque a caixa
+"Privileged" Enable this flag if you want to build Docker images or want your builds to get elevated privileges
+
+
+Em environment, selecione Ubuntu, runtime Standard e image 5.0	
+	
 ## Finalizando
 
 Para saber mais:
