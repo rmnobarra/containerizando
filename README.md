@@ -647,6 +647,7 @@ e em services altere a targetPort para 8080
 29. Crie uma role com as policies
 
 CloudWatchFullAccess
+
 AmazonElasticContainerRegistryPublicPowerUser
 
 Adicione a inline readonly eks (colocar a arn da role criada para interagir com o cluster eks no segundo bloco "STSASSUME")
