@@ -80,5 +80,5 @@ affinity: {}
 
 application:
   DATABASE_USER: myuser
-  DATABASE_URL: jdbc:postgresql://lab.chpeyn5uxxax.us-east-1.rds.amazonaws.com:5432/mydb
+  DATABASE_URL: jdbc:postgresql://db.chpeyn5uxxax.us-east-1.rds.amazonaws.com:5432/mydb
   DATABASE_PASS: mypass
