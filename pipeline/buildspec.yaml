@@ -17,6 +17,7 @@ phases:
       - ./mvnw package
       - docker build -t containerizando .
       - docker tag containerizando public.ecr.aws/i2c7a5l2/containerizando:latest
+      - docker image ls
 
   post_build:
     commands:
