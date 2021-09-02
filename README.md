@@ -508,6 +508,7 @@ create user myuser with encrypted password 'mypass';
 
 Para o codebuild interagir com o cluster eks, é preciso criar uma iam role
 
+```json
 TRUST="{ \"Version\": \"2012-10-17\", \"Statement\": [ { \"Effect\": \"Allow\", \"Principal\": { \"AWS\": \"arn:aws:iam::208471844409:root\" }, \"Action\": \"sts:AssumeRole\" } ] }"
 
 echo '{ "Version": "2012-10-17", "Statement": [ { "Effect": "Allow", "Action": "eks:Describe*", "Resource": "*" } ] }' > /tmp/iam-role-policy
@@ -515,17 +516,26 @@ echo '{ "Version": "2012-10-17", "Statement": [ { "Effect": "Allow", "Action": "
 aws iam create-role --role-name CodeBuildKubectlRole --assume-role-policy-document "$TRUST" --output text --query 'Role.Arn'
 
 aws iam put-role-policy --role-name CodeBuildKubectlRole --policy-name eks-describe --policy-document file:///tmp/iam-role-policy
+```
 
 modificando aws-auth configmap
 
+```json
 ROLE="    - rolearn: arn:aws:iam::208471844409:role/CodeBuildKubectlRole\n      username: build\n      groups:\n        - system:masters"
+```
 
 kubectl get -n kube-system configmap/aws-auth -o yaml | awk "/mapRoles: \|/{print;print \"$ROLE\";next}1" > /tmp/aws-auth-patch.yml
 
 kubectl patch configmap/aws-auth -n kube-system --patch "$(cat /tmp/aws-auth-patch.yml)"
 
 
-## codebuild
+## buildspec para o codebuild
+
+Estrutura para deployment
+
+```bash
+mdkir pipeline
+```
 
 Crie o arquivo buildspec.yaml
 
@@ -548,35 +558,24 @@ phases:
       - chmod +x /bin/kubectl /bin/helm ./aws-iam-authenticator
       - export PATH=$PWD/:$PATH
       - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
-
-  pre_build:
-    commands:
-      - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) $URL_REPO
-      - sh gradlew build -x test
-      - echo exporting kubeconfig
-      - export KUBECONFIG=$HOME/.kube/config
       
   build:
     commands:
+      - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
       - ./mvnw package
-      - docker build -t containerizando . 
-      - docker tag containerizando:latest public.ecr.aws/i2c7a5l2/lab/containerizando:latest
+      - docker build -t containerizando .
+      - docker tag containerizando public.ecr.aws/i2c7a5l2/containerizando:latest
 
   post_build:
     commands:
-      - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) public.ecr.aws/i2c7a5l2/lab
-      - docker push public.ecr.aws/i2c7a5l2/lab/containerizando:latest
-      - helm lint pipeline/helm/containerizando --values pipeline/helm/containerizando/values.yaml
-      - aws eks update-kubeconfig --name zup-sandbox-edu-lab --role-arn arn:aws:iam::208471844409:role/CodeBuildKubectlRole
-      - helm upgrade -i containerizando pipeline/helm/containerizando/ --values pipeline/helm/containerizando/values.yaml
+      - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) public.ecr.aws/i2c7a5l2/containerizando
+      - docker push public.ecr.aws/i2c7a5l2/containerizando:latest
+      - helm lint pipeline/containerizando --values pipeline/containerizando/values.yaml
+      - aws eks update-kubeconfig --name zup-sandbox-edu-containerizando --role-arn arn:aws:iam::208471844409:role/CodeBuildKubectlRole
+      - helm upgrade -i containerizando pipeline/containerizando/ --values pipeline/containerizando/values.yaml
 ```
 
 ## helm
-Estrutura para deployment
-
-```bash
-mdkir pipeline
-```
 
 23. Cria helm
 ```bash
@@ -643,13 +642,14 @@ e em services altere a targetPort para 8080
 
 ## Role para o codebuild
 
-Crie uma role com as policies
+29. Crie uma role com as policies
 
 CloudWatchFullAccess
 AmazonElasticContainerRegistryPublicPowerUser
 
-inline readonly eks
+Adicione a inline readonly eks (colocar a arn da role criada para interagir com o cluster eks no segundo bloco "STSASSUME")
 
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -667,21 +667,58 @@ inline readonly eks
             "Sid": "STSASSUME",
             "Effect": "Allow",
             "Action": "sts:AssumeRole",
-            "Resource": "arn:aws:iam::44755xxxxxxx:role/EksCodeBuildkubectlRole"
+            "Resource": "arn:aws:iam::44755xxxxxxx:role/CodeBuildKubectlRole"
         }
     ]
 }
-	
+```
+
+30. Vá para o serviço codebuild, clique em create build project
+
+![codebuild](img/codebuild01.png "Criando projeto no codebuild")
+
+31. Em Project configuration, defina um nome para o projeto
+
+![codebuild](img/codebuild02.png "Criando projeto no codebuild")
+
+32. Em source, altere o source provider para github, adicione o repositório https://github.com/rmnobarra/containerizando.git como source e a branche, main.
+
+![codebuild](img/codebuild03.png "Criando projeto no codebuild")
+
+33. Em Environment, selecione Ubuntu, runtime Standard e image 5.0, marque a caixa "Privileged" Enable this flag if you want to build Docker images or want your builds to get elevated privileges e em service role, selecione a role criada no passo 29. 
+
+Desmarque a opção "Allow AWS CodeBuild to modify this service role so it can be used with this build project"
+
+![codebuild](img/codebuild04.png "Criando projeto no codebuild")
+
+Clique em Additional configuration
+
+![codebuild](img/codebuild05.png "Criando projeto no codebuild")
+
+Vá até Environment variables e crie as variáveis
+
+DOCKERHUB_USERNAME
+
+DOCKERHUB_PASSWORD
+
+![codebuild](img/codebuild06.png "Criando projeto no codebuild")
+
+A primeira deve conter sua conta no dockerhub e a segunda, seu token para acesso (isso vai ajudar a aumentar a quantidade de pull no docker hub :))
+
+34. Em buildspec, deixe marcado "Use a buildspec file" e em buildspec name, coloque pipeline/buildspec.yaml
+
+![codebuild](img/codebuild07.png "Criando projeto no codebuild")
+
+35. Em Logs, deixe marcado CloudWatch logs - optional e clique em Create build Project
+
+![codebuild](img/codebuild08.png "Criando projeto no codebuild")
+
+36. Execute o build
+
+37. Altere o tipo de service do containerizando e valide via browser se tudo correu certo.
 kubectl expose deployment/containerizando --type LoadBalancer
 
-k port-forward <pod> 8080:80
-	
-Adicione o repo https://github.com/rmnobarra/containerizando.git como source, branche k8s, marque a caixa
-"Privileged" Enable this flag if you want to build Docker images or want your builds to get elevated privileges
 
-
-Em environment, selecione Ubuntu, runtime Standard e image 5.0	
-	
 ## Finalizando
 
 Para saber mais:
