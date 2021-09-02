@@ -715,8 +715,17 @@ A primeira deve conter sua conta no dockerhub e a segunda, seu token para acesso
 
 36. Execute o build
 
-37. Altere o tipo de service do containerizando e valide via browser se tudo correu certo.
+![codebuild](img/codebuild09.png "Criando projeto no codebuild")
+
+37. Altere o tipo de service do containerizando
+
+```bash
 kubectl expose deployment/containerizando --type LoadBalancer
+```
+
+38. Valide via browser se tudo correu certo.
+
+<endereço do load balance>/actuator/health
 
 
 ## Finalizando
