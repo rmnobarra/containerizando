@@ -566,7 +566,7 @@ phases:
       - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
       - ./mvnw package
       - docker build -t containerizando .
-      - docker tag containerizando public.ecr.aws/i2c7a5l2/containerizando:latest
+      - docker tag containerizando:latest public.ecr.aws/i2c7a5l2/containerizando:latest
 
   post_build:
     commands:
