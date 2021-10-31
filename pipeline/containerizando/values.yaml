@@ -82,3 +82,17 @@ application:
   DATABASE_USER: user
   DATABASE_URL: jdbc:postgresql://xxx.amazonaws.com:5432/mydb
   DATABASE_PASS: pass
+
+postgresql_db_name = "postgreszupot"
+postgresql_db_user = "sysadmin"
+postgresql_db_pass = "0uNs6QR883jv32Bq!"
+
+
+
+
+module.rds.db_instance_address
+
+module.rds.db_instance_username
+
+
+module.rds.db_instance_password

@@ -30,4 +30,3 @@ phases:
       - helm lint pipeline/containerizando --values pipeline/containerizando/values.yaml
       - aws eks update-kubeconfig --name zup-sandbox-edu --role-arn arn:aws:iam::208471844409:role/CodeBuildKubectlRole
       - cd pipeline && /bin/helmfile apply
-      #- helm upgrade -i containerizando pipeline/containerizando/ --values pipeline/containerizando/values.yaml

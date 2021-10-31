@@ -27,6 +27,21 @@ resource "aws_codebuild_project" "containerizando" {
       name  = "DOCKERHUB_TOKEN"
       value = var.dockerhub_token
     }
+
+    environment_variable {
+      name  = "DB_URL"
+      value = module.rds.db_instance_address
+    }
+
+    environment_variable {
+      name  = "DB_USER"
+      value = module.rds.db_instance_username
+    }
+
+    environment_variable {
+      name  = "DB_PASS"
+      value = module.rds.db_instance_password
+    }
   }
 
   logs_config {

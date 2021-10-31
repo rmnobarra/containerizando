@@ -7,8 +7,6 @@ helmDefaults:
   
 helmBinary: /usr/local/sbin/helm
 
-
-
 releases:
   - name: containerizando
     chart: ./containerizando
@@ -16,6 +14,11 @@ releases:
     values:
     - ./containerizando/values.yaml
     recreatePods: true
-
-
+    set:
+    - name: application.DATABASE_USER
+      value: {{ requiredEnv "DB_USER" }}
+    - name: application.DATABASE_URL
+      value: {{ requiredEnv "DB_URL" }}
+    - name: application.DATABASE_PASS
+      value: {{ requiredEnv "DB_PASS" }}
 
