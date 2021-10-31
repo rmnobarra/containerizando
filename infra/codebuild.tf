@@ -57,7 +57,7 @@ resource "aws_codebuild_project" "containerizando" {
     }
   }
 
-  source_version = "master"
+  source_version = "main"
 
   vpc_config {
     vpc_id = var.vpc_id
