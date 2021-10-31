@@ -44,13 +44,6 @@ resource "aws_codebuild_project" "containerizando" {
     }
   }
 
-  logs_config {
-    cloudwatch_logs {
-      group_name  = "log-group"
-      stream_name = "log-stream"
-    }
-  }
-
   source {
     buildspec       = "pipeline/buildspec.yaml"
     type            = "GITHUB"
