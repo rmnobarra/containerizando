@@ -1,0 +1,21 @@
+helmDefaults:
+  tillerless: true
+  verify: false
+  wait: true
+  timeout: 600
+  force: true
+  
+helmBinary: /usr/local/sbin/helm
+
+
+
+releases:
+  - name: containerizando
+    chart: ./containerizando
+    namespace: default
+    values:
+    - ./containerizando/values.yaml
+    recreatePods: true
+
+
+
