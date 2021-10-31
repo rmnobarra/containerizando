@@ -24,7 +24,7 @@ resource "aws_codebuild_project" "containerizando" {
     }
 
     environment_variable {
-      name  = "DOCKERHUB_PASSWORD"
+      name  = "DOCKERHUB_TOKEN"
       value = var.dockerhub_token
     }
   }
