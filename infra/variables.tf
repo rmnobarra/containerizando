@@ -46,3 +46,7 @@ variable "dockerhub_username" {
 variable "dockerhub_token" {
   
 }
+
+variable "vpc_cidr" {
+
+}

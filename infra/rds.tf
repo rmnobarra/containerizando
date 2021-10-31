@@ -54,8 +54,7 @@ module "security_group" {
       to_port     = 5432
       protocol    = "tcp"
       description = "Porta 5432"
-      #cidr_blocks = "0.0.0.0/0"
-      cidr_blocks = "${chomp(data.http.myip.body)}/32"
+      cidr_blocks = "${chomp(data.http.myip.body)}/32,${var.vpc_cidr}"
     },
   ]
 
