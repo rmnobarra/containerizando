@@ -13,7 +13,6 @@ releases:
     namespace: default
     values:
     - ./containerizando/values.yaml
-    recreatePods: true
     set:
     - name: application.DATABASE_USER
       value: {{ requiredEnv "DB_USER" }}
