@@ -92,8 +92,42 @@ resource "aws_iam_role_policy" "containerizando" {
 
   policy = <<POLICY
 {
-    "Version": "2012-10-17",
-    "Statement": [
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ],
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateNetworkInterface",
+        "ec2:DescribeDhcpOptions",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeVpcs"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": [
+        "${aws_s3_bucket.containerizando.arn}",
+        "${aws_s3_bucket.containerizando.arn}/*"
+      ]
+    },
         {
             "Sid": "EKSREADONLY",
             "Effect": "Allow",
@@ -108,9 +142,18 @@ resource "aws_iam_role_policy" "containerizando" {
             "Sid": "STSASSUME",
             "Effect": "Allow",
             "Action": "sts:AssumeRole",
-            "Resource": "arn:aws:iam::208471844409:role/CodeBuildKubectlRole"
+            "Resource": "${data.aws_iam_role.CodeBuildKubectlRole.arn}"
         }
-    ]
+  ]
 }
 POLICY
 }
+
+
+
+data "aws_iam_role" "CodeBuildKubectlRole" {
+  name = "CodeBuildKubectlRole"
+}
+
+
+#"Resource": "arn:aws:iam::208471844409:role/CodeBuildKubectlRole"

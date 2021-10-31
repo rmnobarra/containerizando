@@ -13,7 +13,7 @@ phases:
       
   build:
     commands:
-      - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+      - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_TOKEN
       - ./mvnw package
       - docker build -t containerizando .
       - docker tag containerizando:latest public.ecr.aws/i2c7a5l2/containerizando:latest
@@ -23,5 +23,5 @@ phases:
       - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) public.ecr.aws/i2c7a5l2/containerizando
       - docker push public.ecr.aws/i2c7a5l2/containerizando:latest
       - helm lint pipeline/containerizando --values pipeline/containerizando/values.yaml
-      - aws eks update-kubeconfig --name zup-sandbox-edu-containerizando --role-arn arn:aws:iam::208471844409:role/CodeBuildKubectlRole
+      - aws eks update-kubeconfig --name zup-sandbox-edu --role-arn arn:aws:iam::208471844409:role/CodeBuildKubectlRole
       - helm upgrade -i containerizando pipeline/containerizando/ --values pipeline/containerizando/values.yaml

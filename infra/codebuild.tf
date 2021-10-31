@@ -1,7 +1,7 @@
 
 
 resource "aws_codebuild_project" "containerizando" {
-  name          = "containerizando-project"
+  name          = "containerizando"
   description   = "containerizando project"
   build_timeout = "5"
   service_role  = aws_iam_role.containerizando.arn
@@ -21,18 +21,16 @@ resource "aws_codebuild_project" "containerizando" {
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
 
-    privileged_mode             = false
-
+    privileged_mode = true
 
     environment_variable {
-      name  = "SOME_KEY1"
-      value = "SOME_VALUE1"
+      name  = "DOCKERHUB_USERNAME"
+      value = var.dockerhub_username
     }
 
     environment_variable {
-      name  = "SOME_KEY2"
-      value = "SOME_VALUE2"
-      type  = "PARAMETER_STORE"
+      name  = "DOCKERHUB_PASSWORD"
+      value = var.dockerhub_token
     }
   }
 
@@ -49,9 +47,9 @@ resource "aws_codebuild_project" "containerizando" {
   }
 
   source {
+    buildspec       = "pipeline/buildspec.yaml"
     type            = "GITHUB"
     location        = var.repo_url
-
     git_clone_depth = 1
 
     git_submodules_config {
@@ -66,10 +64,17 @@ resource "aws_codebuild_project" "containerizando" {
 
     subnets = var.subnets_id
 
+
     security_group_ids = var.sg_id
+
   }
 
   tags = {
-    Environment = "Test"
+    ManagedBy = "Terraform"
   }
+
+  depends_on = [
+    aws_iam_role.containerizando,
+  ]
+
 }

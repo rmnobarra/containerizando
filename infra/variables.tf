@@ -25,3 +25,24 @@ variable "sg_id" {
   default = ["sg-04b3a84098b03347e"]
 
 }
+
+variable "postgresql_db_name" {
+  
+}
+
+variable "postgresql_db_user" {
+  
+}
+
+
+variable "postgresql_db_pass" {
+  
+}
+
+variable "dockerhub_username" {
+  
+}
+
+variable "dockerhub_token" {
+  
+}

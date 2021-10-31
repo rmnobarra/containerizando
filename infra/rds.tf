@@ -54,11 +54,14 @@ module "security_group" {
       to_port     = 5432
       protocol    = "tcp"
       description = "Porta 5432"
-      cidr_blocks = "0.0.0.0/0"
+      #cidr_blocks = "0.0.0.0/0"
+      cidr_blocks = "${chomp(data.http.myip.body)}/32"
     },
   ]
 
   tags = local.tags
+
+  depends_on = [data.http.myip]
 }
 
 output "db_instance_address" {
