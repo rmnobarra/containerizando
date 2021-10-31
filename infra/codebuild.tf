@@ -10,11 +10,6 @@ resource "aws_codebuild_project" "containerizando" {
     type = "NO_ARTIFACTS"
   }
 
-  cache {
-    type     = "S3"
-    location = aws_s3_bucket.containerizando.bucket
-  }
-
   environment {
     compute_type                = "BUILD_GENERAL1_SMALL"
     image                       = "aws/codebuild/standard:5.0"
@@ -39,11 +34,6 @@ resource "aws_codebuild_project" "containerizando" {
       group_name  = "log-group"
       stream_name = "log-stream"
     }
-
-    s3_logs {
-      status   = "ENABLED"
-      location = "${aws_s3_bucket.containerizando.id}/build-log"
-    }
   }
 
   source {
@@ -59,15 +49,15 @@ resource "aws_codebuild_project" "containerizando" {
 
   source_version = "main"
 
-  vpc_config {
-    vpc_id = var.vpc_id
-
-    subnets = var.subnets_id
-
-
-    security_group_ids = var.sg_id
-
-  }
+#  vpc_config {
+#    vpc_id = var.vpc_id
+#
+#    subnets = var.subnets_id
+#
+#
+#    security_group_ids = var.sg_id
+#
+#  }
 
   tags = {
     ManagedBy = "Terraform"
