@@ -1,6 +1,6 @@
 variable "repo_url" {
   type    = string
-  default = "https://github.com/rmnobarra/containerizando.git"
+  default = "https://github.com/rmnobarra/containerizando"
 }
 
 variable "codebuild_arn" {

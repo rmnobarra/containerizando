@@ -419,17 +419,24 @@ docker push rmnobarra/containerizando
 
 Agora a imagem com a aplicação está disponivel para qualquer um que tenha acesso a internet.
 
-## Evoluindo para deploy no aws eks
+## Containerizando e Kubernetes
 
-* A aplicação precisa de um banco de dados postgres para funcionar
+[helmfile](https://github.com/roboll/helmfile)
+[helm](https://helm.sh/)
 
-* A aplicação recebe os valores do banco de dados nas variáveis DATABASE_USER, DATABASE_PASS e DATABASE_URL
+## Deployment da aplicação
 
-* Precisa gerar o artefato container e envia-lo para um repositório público no aws ecr
+* Requisistos
 
-* Precisa deployar a aplicação em um cluster eks
+  * A aplicação precisa de um banco de dados postgres para funcionar
 
-* Precisa utilizar um ou mais serviços aws developer tools para executar essas atividades
+  * A aplicação recebe os valores do banco de dados nas variáveis DATABASE_USER, DATABASE_PASS e DATABASE_URL
+
+### kind
+
+TODO
+
+### aws
 
 terraform plan -var-file="terraform.tfvars"
 
@@ -439,10 +446,9 @@ Valide via browser se tudo correu certo.
 
 <endereço do load balance>/actuator/health
 
+### azure
 
-
-[helmfile](https://github.com/roboll/helmfile)
-[helm](https://helm.sh/)
+TODO
 
 ## Finalizando
 
