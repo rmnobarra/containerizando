@@ -79,6 +79,6 @@ tolerations: []
 affinity: {}
 
 application:
-  DATABASE_USER: 
-  DATABASE_URL: 
-  DATABASE_PASS:
+  DATABASE_USER: user
+  DATABASE_URL: jdbc:postgresql://xxx.amazonaws.com:5432/mydb
+  DATABASE_PASS: pass
