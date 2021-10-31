@@ -30,7 +30,7 @@ resource "aws_codebuild_project" "containerizando" {
 
     environment_variable {
       name  = "DB_URL"
-      value = "${module.rds.db_instance_address}/containerizando"
+      value = "jdbc:postgresql://${module.rds.db_instance_address}/containerizando"
     }
 
     environment_variable {
