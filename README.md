@@ -421,8 +421,89 @@ Agora a imagem com a aplicação está disponivel para qualquer um que tenha ace
 
 ## Containerizando e Kubernetes
 
+Temos uma imagem de container funcional e pronta para ser utilizada através de algum software que executa containeres.
+
+Para isso precisamos melhorar algumas coisas:
+
+* buildar o projeto para gerar novas versões de nosso container a medida que novas funcionalidades são implementadas.
+
+* Cada release deve ir para um repositório de containeres.
+
+* Organizar e proteger variáveis de ambiente.
+
+* Executar o container.
+
+Um bom ponto de partida é preparar nosso container de modo que sua execução independa de provedor, tecnologia, etc.
+
+Para isso vamos construir um [helm](https://helm.sh/) chart.
+
+Os pormenores da instalação eu sugiro que verifique na documentação, para criar o chart do projeto containerizando, devemos seguir os passos:
+
+1. Cria o diretótio para acomodar o chart
+
+```bash
+mkdir pipeline
+```
+
+2.Cria helm
+
+```bash
+helm create pipeline/containerizando
+```
+
+24. Cria configmap.yaml
+touch pipeline/containerizando/templates/configmap.yaml
+
+25. Adicione o conteúdo
+
+```yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: containerizando-cm
+data:
+  DATABASE_USER: "{{ .Values.application.DATABASE_USER }}"
+  DATABASE_URL: "{{ .Values.application.DATABASE_URL }}"
+```
+
+26. Cria secrets.yaml
+
+```bash
+touch pipeline/containerizando/templates/secrets.yaml
+```
+
+27. Adicione o conteúdo
+```yaml
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: containerizando-secrets
+type: Opaque
+data:
+  DATABASE_PASS: {{ .Values.application.DATABASE_PASS | b64enc | quote  }}
+```
+
+Ainda no values, altere "image" para public.ecr.aws/i2c7a5l2/containerizando
+e a tag para "latest"
+
+No arquivo deployment em containers
+
+```yaml
+          envFrom:
+            - configMapRef:
+                name: containerizando-cm
+            - secretRef:
+                name: containerizando-secrets
+```
+e altere a container port para 8080
+
+e em services altere a targetPort para 8080
+
+
+
 [helmfile](https://github.com/roboll/helmfile)
-[helm](https://helm.sh/)
+
 
 ## Deployment da aplicação
 

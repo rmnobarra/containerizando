@@ -50,3 +50,14 @@ variable "dockerhub_token" {
 variable "vpc_cidr" {
 
 }
+
+variable "cluster_name" {
+  type = string
+  default = "zup-sandbox-edu2"
+}
+
+variable "cluster_version" {
+  type = string
+  default = "1.21"
+  
+}
