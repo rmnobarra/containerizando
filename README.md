@@ -677,11 +677,41 @@ Criar um projeto no codebuild intimamente ligado a nossa aplicação
 OBS: Atente-se ao arquivo terraform.tfvars_sample, ele é mandatório para a execução bem sucedida. [Aqui](https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files) tem uma ajuda bem boa
 para se situar sobre variáveis e terraform
 
+OBS 2: É preciso "patchear" uma role no config-auth do cluster, para isso:
 
-Para validar o projeto,
+1. Estar logado na cli da aws
+
+2. Autenticar no cluster
+
+```bash
+aws eks --region us-east-1 update-kubeconfig --name containerizando
+```
+
+Acesse o diretório que contém o script
+
+```bash
+cd /infra/utils
+```
+
+3. No script "script.sh", ajuste a variável ACCOUNT_ID conforme o ambiente.
+
+4. Execute o script
+
+```bash
+chmod +x script.sh && ./script.sh
+```
+
+Para validar o projeto
+
+```bash
 terraform plan -var-file="terraform.tfvars"
+```
 
+Para aplicar o projeto
+
+```bash
 terraform apply -var-file="terraform.tfvars" --auto-approve
+```
 
 Valide via browser se tudo correu certo.
 
