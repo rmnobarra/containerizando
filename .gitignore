@@ -8,6 +8,8 @@ target/
 
 *.tfvars
 
+*kubeconfig*
+
 # .tfstate files
 *.tfstate
 *.tfstate.*

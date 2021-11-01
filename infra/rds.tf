@@ -1,12 +1,3 @@
-locals {
-  name   = "postgreszupot"
-  region = "us-east-1"
-  tags = {
-    Owner       = "Zup Academy"
-    Environment = "dev"
-  }
-}
-
 module "rds" {
   source  = "terraform-aws-modules/rds/aws"
   version = "3.4.0"
@@ -15,14 +6,14 @@ module "rds" {
 
   engine               = "postgres"
   engine_version       = "11.10"
-  family               = "postgres11" 
-  major_engine_version = "11"        
+  family               = "postgres11"
+  major_engine_version = "11"
   instance_class       = "db.t3.micro"
 
 
-	publicly_accessible = true
+  publicly_accessible = true
 
-  name     = "postgreszupot"
+  name     = "postgreszup"
   username = "sysadmin"
   password = "0uNs6QR883jv32Bq!"
   port     = 5432
@@ -44,7 +35,7 @@ module "security_group" {
   version = "~> 4"
 
   name        = local.name
-  description = "Acesso postggresql"
+  description = "Acesso postggres"
   vpc_id      = var.vpc_id
 
   # ingress
@@ -61,46 +52,4 @@ module "security_group" {
   tags = local.tags
 
   depends_on = [data.http.myip]
-}
-
-output "db_instance_address" {
-  description = "The address of the RDS instance"
-  value       = module.rds.db_instance_address
-}
-
-output "db_instance_id" {
-  description = "The RDS instance ID"
-  value       = module.rds.db_instance_id
-}
-
-output "db_instance_status" {
-  description = "The RDS instance status"
-  value       = module.rds.db_instance_status
-}
-
-output "db_instance_name" {
-  description = "The database name"
-  value       = module.rds.db_instance_name
-}
-
-output "db_instance_username" {
-  description = "The master username for the database"
-  value       = module.rds.db_instance_username
-  sensitive   = true
-}
-
-output "db_instance_password" {
-  description = "The database password (this password may be old, because Terraform doesn't track it after initial creation)"
-  value       = module.rds.db_instance_password
-  sensitive   = true
-}
-
-output "db_instance_port" {
-  description = "The database port"
-  value       = module.rds.db_instance_port
-}
-
-output "db_subnet_group_id" {
-  description = "The db subnet group name"
-  value       = module.rds.db_subnet_group_id
 }

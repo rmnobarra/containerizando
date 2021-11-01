@@ -6,27 +6,25 @@ phases:
       - curl -o /bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl
       - curl -sS -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
       - wget -qO- https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz | tar xvz
-      - mv linux-amd64/helm /usr/local/sbin/helm
       - helm plugin install https://github.com/databus23/helm-diff
       - wget https://github.com/roboll/helmfile/releases/download/v0.141.0/helmfile_linux_amd64
+      - mv linux-amd64/helm /usr/local/sbin/helm
       - mv helmfile_linux_amd64 /bin/helmfile
-      - chmod +x /bin/helmfile
-      - chmod +x /bin/kubectl /usr/local/sbin/helm ./aws-iam-authenticator
+      - chmod +x /bin/kubectl /usr/local/sbin/helm ./aws-iam-authenticator /bin/helmfile
       - export PATH=$PWD/:$PATH
       - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
       
   build:
     commands:
-      - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_TOKEN
       - ./mvnw package
+      - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_TOKEN
       - docker build -t containerizando .
-      - docker tag containerizando:latest public.ecr.aws/i2c7a5l2/containerizando:latest
-      - docker image ls
+      - docker tag containerizando:latest $IMAGE_URL:$IMAGE_TAG
 
   post_build:
     commands:
-      - docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) public.ecr.aws/i2c7a5l2/containerizando
-      - docker push public.ecr.aws/i2c7a5l2/containerizando:latest
+      - docker login -u AWS -p $(aws ecr-public get-login-password --region $AWS_REGION) $IMAGE_URL
+      - docker push $IMAGE_URL:$IMAGE_TAG
       - helm lint pipeline/containerizando --values pipeline/containerizando/values.yaml
-      - aws eks update-kubeconfig --name zup-sandbox-edu --role-arn arn:aws:iam::208471844409:role/CodeBuildKubectlRole
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --role-arn $ARN_ROLE
       - cd pipeline && /bin/helmfile apply

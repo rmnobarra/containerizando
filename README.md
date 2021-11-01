@@ -451,10 +451,13 @@ mkdir pipeline
 helm create pipeline/containerizando
 ```
 
-24. Cria configmap.yaml
-touch pipeline/containerizando/templates/configmap.yaml
+3. Cria configmap.yaml
 
-25. Adicione o conteúdo
+```bash
+touch pipeline/containerizando/templates/configmap.yaml
+```
+
+4. Adicione o conteúdo
 
 ```yaml
 kind: ConfigMap
@@ -466,13 +469,13 @@ data:
   DATABASE_URL: "{{ .Values.application.DATABASE_URL }}"
 ```
 
-26. Cria secrets.yaml
+5. Cria secrets.yaml
 
 ```bash
 touch pipeline/containerizando/templates/secrets.yaml
 ```
 
-27. Adicione o conteúdo
+6. Adicione o conteúdo
 ```yaml
 ---
 apiVersion: v1
@@ -484,10 +487,26 @@ data:
   DATABASE_PASS: {{ .Values.application.DATABASE_PASS | b64enc | quote  }}
 ```
 
-Ainda no values, altere "image" para public.ecr.aws/i2c7a5l2/containerizando
-e a tag para "latest"
+7. No values.yaml altere o type em service de ClusterIP para LoadBalancer:
 
-No arquivo deployment em containers
+```yaml
+service:
+  type: LoadBalancer
+  port: 80
+```
+8. Ainda em values.yaml, adicione as linhas no final do arquivo:
+
+```yaml
+application:
+  DATABASE_USER: meuusuario
+  DATABASE_URL: jdbc:postgresql://xxx.url.com:5432/meubanco
+  DATABASE_PASS: minhasenhasupersecreta
+```
+
+OBS: Não se preocupe, essas linhas servirão para que o lint do helm não quebre, iremos lidar com senhas
+utilizando variáveis de ambiente. ;)
+
+9. No arquivo deployment.yaml, sessão "containers"
 
 ```yaml
           envFrom:
@@ -498,20 +517,139 @@ No arquivo deployment em containers
 ```
 e altere a container port para 8080
 
-e em services altere a targetPort para 8080
+10. Em services.yaml altere a targetPort para 8080
 
+```yaml
+
+      targetPort: 8080
+```
+
+11. Ainda no deployment.yaml, adicione o path do health check (/actuator/health) como abaixo:
+
+```yaml
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+```
+
+Nesse momento a ideia é que tenhamos um helm chart funcional.
 
 
 [helmfile](https://github.com/roboll/helmfile)
 
+O helmfile é uma forma declarativa de executar helm charts com bastante funcionalidades bem úteis:
 
-## Deployment da aplicação
+* workspaces
+* variáveis de ambiente
+* sync
 
-* Requisistos
+Vale a pena dar uma olhada no projeto ;)
 
-  * A aplicação precisa de um banco de dados postgres para funcionar
+Vamos configurar o helmfile para trabalhar com o nosso chart e também integrando o com o nosso projeto no codebuild
 
-  * A aplicação recebe os valores do banco de dados nas variáveis DATABASE_USER, DATABASE_PASS e DATABASE_URL
+1. cria helmfile.yaml
+
+```bash
+touch pipeline/helmfile.yaml
+```
+
+2. Adicione o conteúdo
+
+```yaml
+helmDefaults:
+  tillerless: true
+  verify: false
+  wait: true
+  timeout: 600
+  force: true
+  
+helmBinary: /usr/local/sbin/helm
+
+releases:
+  - name: containerizando
+    chart: ./containerizando
+    namespace: default
+    values:
+    - ./containerizando/values.yaml
+    set:
+    - name: application.DATABASE_USER
+      value: {{ requiredEnv "DB_USER" }}
+    - name: application.DATABASE_URL
+      value: {{ requiredEnv "DB_URL" }}
+    - name: application.DATABASE_PASS
+      value: {{ requiredEnv "DB_PASS" }}
+    - name: image.repository
+      value: {{ requiredEnv "IMAGE_URL" }}
+```
+
+Com isso temos o helmfile configurado e apto a dar play em nosso chart. Vamos para o prox passo que é integrar esses recursos
+
+Buildspec para o codebuild
+
+Estrutura para o buildspec
+
+1. Crie o arquivo buildspec.yaml
+
+```bash
+touch pipeline/containerizando/buildspec.yaml
+```
+
+2. Adicione o conteúdo
+
+```yaml
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - curl -o /bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl
+      - curl -sS -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
+      - wget -qO- https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz | tar xvz
+      - helm plugin install https://github.com/databus23/helm-diff
+      - wget https://github.com/roboll/helmfile/releases/download/v0.141.0/helmfile_linux_amd64
+      - mv linux-amd64/helm /usr/local/sbin/helm
+      - mv helmfile_linux_amd64 /bin/helmfile
+      - chmod +x /bin/kubectl /usr/local/sbin/helm ./aws-iam-authenticator /bin/helmfile
+      - export PATH=$PWD/:$PATH
+      - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
+      
+  build:
+    commands:
+      - ./mvnw package
+      - docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_TOKEN
+      - docker build -t containerizando .
+      - docker tag containerizando:latest $IMAGE_URL:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - docker login -u AWS -p $(aws ecr-public get-login-password --region $AWS_REGION) $IMAGE_URL
+      - docker push $IMAGE_URL:$IMAGE_TAG
+      - helm lint pipeline/containerizando --values pipeline/containerizando/values.yaml
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --role-arn $ARN_ROLE
+      - cd pipeline && /bin/helmfile apply
+```
+
+Cada fase é responsável por uma etapa que faríamos manualmente em nossa máquina, caso quiséssemos buildar nosso projeto
+e executa-lo em um cluster eks
+
+Fase install:
+
+Baixa todos os binários necessários, move-os e configura permissão para suas execuções e por fim atualiza o runtime
+
+Fase build:
+
+Autentica no docker hub para não ter limitação de pull, compila o projeto, faz build e tag na imagem de container
+
+Fase post_build:
+
+Autentica no ecr, faz o push da imagem, executa um lint básico no helm chart, faz autenticação no cluster eks e aplica
+o helm chart usando o helmfile.
+
+
 
 ### kind
 

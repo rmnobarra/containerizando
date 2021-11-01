@@ -13,7 +13,7 @@ provider "kubernetes" {
 }
 
 module "eks" {
-  source          = "terraform-aws-modules/eks/aws"
+  source = "terraform-aws-modules/eks/aws"
 
   cluster_version = var.cluster_version
   cluster_name    = var.cluster_name
@@ -24,11 +24,11 @@ module "eks" {
     {
 
       name                 = "worker-group-1"
-      instance_type = "t3.small"
+      instance_type        = "t3.small"
       asg_desired_capacity = 2
-      asg_max_size = 5
-      asg_min_size  = 2
-      autoscaling_enabled = true
+      asg_max_size         = 5
+      asg_min_size         = 2
+      autoscaling_enabled  = true
       public_ip            = true
 
     }

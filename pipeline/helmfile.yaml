@@ -20,4 +20,6 @@ releases:
       value: {{ requiredEnv "DB_URL" }}
     - name: application.DATABASE_PASS
       value: {{ requiredEnv "DB_PASS" }}
+    - name: image.repository
+      value: {{ requiredEnv "IMAGE_URL" }}
 

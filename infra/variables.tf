@@ -1,3 +1,7 @@
+variable "aws_region" {
+  default = "us-east-1"
+
+}
 variable "repo_url" {
   type    = string
   default = "https://github.com/rmnobarra/containerizando"
@@ -27,24 +31,24 @@ variable "sg_id" {
 }
 
 variable "postgresql_db_name" {
-  
+
 }
 
 variable "postgresql_db_user" {
-  
+
 }
 
 
 variable "postgresql_db_pass" {
-  
+
 }
 
 variable "dockerhub_username" {
-  
+
 }
 
 variable "dockerhub_token" {
-  
+
 }
 
 variable "vpc_cidr" {
@@ -52,12 +56,13 @@ variable "vpc_cidr" {
 }
 
 variable "cluster_name" {
-  type = string
-  default = "zup-sandbox-edu2"
+  type    = string
+  default = "containerizando"
 }
 
 variable "cluster_version" {
-  type = string
+  type    = string
   default = "1.21"
-  
+
 }
+

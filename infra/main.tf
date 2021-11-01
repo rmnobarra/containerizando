@@ -6,7 +6,7 @@ provider "aws" {
 terraform {
   required_providers {
     postgresql = {
-      source = "cyrilgdn/postgresql"
+      source  = "cyrilgdn/postgresql"
       version = "1.14.0"
     }
   }
@@ -19,5 +19,5 @@ provider "postgresql" {
   username        = var.postgresql_db_user
   password        = var.postgresql_db_pass
   sslmode         = "disable"
-  connect_timeout = 15
+  connect_timeout = 600
 }
