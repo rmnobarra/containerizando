@@ -1,6 +1,6 @@
-postgresql_db_name = 
-postgresql_db_user = 
-postgresql_db_pass = 
-dockerhub_username = 
-dockerhub_token = 
-  
+postgresql_db_name = "nome-do-banco"
+postgresql_db_user = "nome-do-usuario"
+postgresql_db_pass = "super-senha-do-usuario"
+dockerhub_username = "login-docker-hub"
+dockerhub_token    = "token-docker-hub"
+vpc_cidr           = "rede-da-vpc"

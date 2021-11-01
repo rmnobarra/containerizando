@@ -649,6 +649,45 @@ Fase post_build:
 Autentica no ecr, faz o push da imagem, executa um lint básico no helm chart, faz autenticação no cluster eks e aplica
 o helm chart usando o helmfile.
 
+Juntando tudo e deployando a app
+
+Dentro de /infra existe um projeto [terraform](terraform.io) que tenta criar e configurar a maioria das coisas para automatizar esse processo.
+
+Há uma tentativa de aplicar infraestrutura como código aqui. Deixo abaixo algumas linhas sobre para balizar o conceito neste momento:
+
+A infraestrutura como código (IaC) envolve a substituição de processos manuais e procedimentos operacionais padrão para configurar dispositivos e sistemas operacionais de hardware distintos por código ou aplicativo que gerencie e provisione automaticamente a pilha de tecnologia.
+
+Já terraform é uma ferramenta para construção, manutenção e versionamento de infraestrutura de forma segura e eficiente. O Terraform pode gerenciar tanto provedores públicos quanto privados.
+
+O projeto consiste em:
+
+Criar uma instância rds postgres;
+
+Criar uma database no rds;
+
+Criar um cluster eks;
+
+Criar um repositório público no ecr;
+
+Criar as permissões necessárias para o acesso entre serviços;
+
+Criar um projeto no codebuild intimamente ligado a nossa aplicação
+
+OBS: Atente-se ao arquivo terraform.tfvars_sample, ele é mandatório para a execução bem sucedida. [Aqui](https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files) tem uma ajuda bem boa
+para se situar sobre variáveis e terraform
+
+
+Para validar o projeto,
+terraform plan -var-file="terraform.tfvars"
+
+terraform apply -var-file="terraform.tfvars" --auto-approve
+
+Valide via browser se tudo correu certo.
+
+<endereço do load balance>/actuator/health
+
+
+
 
 
 ### kind
@@ -657,13 +696,7 @@ TODO
 
 ### aws
 
-terraform plan -var-file="terraform.tfvars"
 
-terraform apply -var-file="terraform.tfvars" --auto-approve
-
-Valide via browser se tudo correu certo.
-
-<endereço do load balance>/actuator/health
 
 ### azure
 
