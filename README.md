@@ -609,12 +609,12 @@ phases:
       - curl -o /bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl
       - curl -sS -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator
       - wget -qO- https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz | tar xvz
-      - helm plugin install https://github.com/databus23/helm-diff
       - wget https://github.com/roboll/helmfile/releases/download/v0.141.0/helmfile_linux_amd64
       - mv linux-amd64/helm /usr/local/sbin/helm
       - mv helmfile_linux_amd64 /bin/helmfile
       - chmod +x /bin/kubectl /usr/local/sbin/helm ./aws-iam-authenticator /bin/helmfile
       - export PATH=$PWD/:$PATH
+      - helm plugin install https://github.com/databus23/helm-diff
       - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
       
   build:
@@ -631,6 +631,7 @@ phases:
       - helm lint pipeline/containerizando --values pipeline/containerizando/values.yaml
       - aws eks update-kubeconfig --name $CLUSTER_NAME --role-arn $ARN_ROLE
       - cd pipeline && /bin/helmfile apply
+
 ```
 
 Cada fase é responsável por uma etapa que faríamos manualmente em nossa máquina, caso quiséssemos buildar nosso projeto
