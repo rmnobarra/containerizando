@@ -10,8 +10,9 @@ phases:
       - mv linux-amd64/helm /usr/local/sbin/helm
       - mv helmfile_linux_amd64 /bin/helmfile
       - chmod +x /bin/kubectl /usr/local/sbin/helm ./aws-iam-authenticator /bin/helmfile
-      - export PATH=$PWD/:$PATH
+      - helm plugin install https://github.com/databus23/helm-diff
       - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
+      - export PATH=$PWD/:$PATH
       
   build:
     commands:
