@@ -433,7 +433,120 @@ Para isso precisamos melhorar algumas coisas:
 
 * Executar o container.
 
-Um bom ponto de partida é preparar nosso container de modo que sua execução independa de provedor, tecnologia, etc.
+Kubernetes
+
+[Kubernetes](https://kubernetes.io/), também conhecido como K8s, é um sistema de código aberto para automatizar a implantação, escalonamento e gerenciamento de aplicativos em contêineres.
+
+No momento, o que precisamos saber é que Kubernetes orquestra containeres muito, muito bem. E como faço para executar meu container
+em um cluster k8s?
+
+Para interagir com o cluster kubernetes, utilizamos o seu client, o [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
+
+e temos 2 formas de interação:
+
+* imperativa
+
+* declarativa
+
+[Aqui](https://kubernetes.io/docs/concepts/overview/working-with-objects/object-management/) tem uma boa doc sobre.
+
+Resumindo, 
+
+Imperativa = executar os comandos "on the fly"
+
+Declarativa = Executar os comandos utilizando arquivos
+
+E no nosso caso, como eu executo o container dentro do cluster.
+
+A forma imperativa seria:
+
+```bash
+kubectl run containerizando --image rmnobarra/containerizando:latest
+```
+
+A aplicação containerizando precisa de um banco de dados para funcionar. No docker-compose, utilizamos variável de ambiente
+para enviar a uri, usuário e senha do banco. O kubernetes também tem :)
+
+Configmap
+
+kubectl create configmap containerizando-cm --from-literal=DATABASE_USER=usuario --from-literal=DATABASE_PASS=senha --from-literal=DATABASE_URL=uri-do-postgres
+
+Opa, temos uma senha em texto plano aqui. Isso não é bom. Por sorte o kubernetes também endereça variáveis de ambiente
+com um teor sensivel, Não é uma perfeição mas pelo menos não está em texto puro. 
+
+Secrets
+
+```bash
+kubectl create secret generic containerizando-secrets --from-literal=DATABASE_PASS='minhasenha'
+```
+
+Decoding a secret
+
+```bash
+kubectl get secret containerizando-secrets -o jsonpath='{.data}' | jq '.[]' |  xargs | base64 --decode
+```
+
+A forma declarativa seria:
+
+
+Fazendo encode do base64
+
+echo 'minhasenha' | base64
+
+```yaml
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: containerizando-secrets
+type: Opaque
+data:
+  DATABASE_PASS: bWluaGFzZW5oYQo=
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: containerizando-cm
+  namespace: default
+data:
+  DATABASE_USER: usuario
+  DATABASE_URL: jdbc:postgres:5432/meubanco
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: containerizando-deployment
+  labels:
+    app: containerizando
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: containerizando
+  template:
+    metadata:
+      labels:
+        app: containerizando
+    spec:
+      containers:
+      - name: containerizando
+        image: rmnobarra/containerizando:latest
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - secretRef:
+            name: containerizando-secrets
+        - configMapRef:
+            name: containerizando-cm
+```
+
+Melhorou um pouco a organização e deployment, certo? O ponto é que compartilhar, atualizar e gerenciar yamls dessa forma,
+pode não ser a melhor opção. Um ferramenta graduada na cncf e largamente utiliza que se chama Helm, tenta
+endereçar essa situação.
 
 Para isso vamos construir um [helm](https://helm.sh/) chart.
 
