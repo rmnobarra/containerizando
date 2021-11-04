@@ -27,5 +27,5 @@ phases:
       - docker push $IMAGE_URL:$IMAGE_TAG
       - helm lint pipeline/containerizando --values pipeline/containerizando/values.yaml
       - aws eks update-kubeconfig --name $CLUSTER_NAME --role-arn $ARN_ROLE
-      - kubectl get  nodes
+      - kubectl get nodes
       - cd pipeline && /bin/helmfile apply
