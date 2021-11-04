@@ -13,9 +13,9 @@ module "rds" {
 
   publicly_accessible = true
 
-  name     = "postgreszup"
-  username = "sysadmin"
-  password = "0uNs6QR883jv32Bq!"
+  name     = var.postgresql_db_name
+  username = var.postgresql_db_user
+  password = var.postgresql_db_pass
   port     = 5432
 
   allocated_storage     = 20

@@ -101,4 +101,3 @@ resource "aws_codebuild_project" "containerizando" {
 
   ]
 }
-
