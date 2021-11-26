@@ -138,7 +138,13 @@ docker container run -p 8080:8080 rmnobarra/containerizando --name containerizan
 
 Verificar o status do serviço em http://localhost:8080/actuator/health
 
-Por quê a conexão com o banco não está mais funcionando?
+Antes de mais nada, vamos tentar definir o que é localhost
+
+Em redes de computadores, Localhost refere-se ao computador que executa um programa. O computador funciona como um servidor virtual.
+
+Nesse sentido, o computador não é um objeto físico, mas um sistema que é executado internamente. Se isso se tornar difícil de entender, considere localhost como uma maneira de "ligar" para o seu computador a partir dele mesmo.
+
+Voltando a nossa aplicação. Por quê a conexão com o banco não está mais funcionando?
 
 O contexto de conexão agora mudou, durante o desenvolvimento, o build / start da aplicação conectava no localhost da estação
 que executava a ação, agora, dentro do container, o localhost não tem nenhum banco de dados aguardando conexão, logo é necessário
