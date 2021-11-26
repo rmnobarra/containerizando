@@ -2,7 +2,13 @@
 
 ## Introdução
 
-Docker é um conjunto de produtos de plataforma como serviço que usam virtualização de nível de sistema operacional para entregar software em pacotes chamados contêineres. Os contêineres são isolados uns dos outros e agrupam seus próprios softwares, bibliotecas e arquivos de configuração
+Docker é um conjunto de produtos de plataforma como serviço que usam virtualização de nível de sistema operacional para entregar software em pacotes chamados contêineres. Os contêineres são isolados uns dos outros e agrupam seus próprios softwares, bibliotecas e arquivos de configuração.
+
+Um pouco mais a fundo, podemos dizer que containeres são duas coisas, como um programa normal do Linux, os contêineres têm dois estados, repouso e execução.
+
+Quando em repouso, um contêiner é um arquivo (ou conjunto de arquivos) que é salvo no disco. Isso é conhecido como Container Image ou Container Repository. 
+
+Quando você digita o comando para iniciar um contêiner, o Container Engine (docker, podman, containerd, lxc, rkt) descompacta os arquivos e metadados necessários e os entrega ao kernel do Linux. Iniciar um contêiner é muito semelhante a iniciar um processo normal do Linux e requer fazer uma chamada de API para o kernel do Linux. Essa chamada de API normalmente inicia um isolamento extra e monta uma cópia dos arquivos que estavam na imagem do contêiner. Uma vez em execução, os contêineres são apenas um processo Linux.
 
 ## Projeto containerizando
 
@@ -210,7 +216,9 @@ docker está sendo executado e temos a container network, que é uma rede dedica
 criar N redes para organizar a comunicação, quando nenhuma rede é criada, por padrão os containers são conectados a rede "_default"
 
 Em cada container network o docker cria um serviço dns para facilitar a comunicação entre os containers, e com isso é possível a 
-conexão entre containers utilizando o service name, veja a string de conexão da aplicação com o comando:
+conexão entre containers utilizando o service name.
+
+Veja a string de conexão da aplicação com o comando:
 
 ```bash
 docker exec -ti containerizando env
@@ -221,11 +229,9 @@ está ok. Verifique novamente em: http://localhost:8080/actuator/health
 
 E como essa comunicação ocorre?
 
-Basicamente temos 2 tipos de redes, a container network e host network. Quando falamos de conectividade entre containers,
-a comunicação é feita diretamente via a container network.
+Basicamente temos 2 tipos de redes, a container network e host network. Quando falamos de conectividade entre containers, a comunicação é feita diretamente via a container network.
 
-Quando queremos acessar externamente determinado serviço que está sendo executado em um container, utilizamos a host network e um mapeamento
-de portas (parâmetro -p)
+Quando queremos acessar externamente determinado serviço que está sendo executado em um container, utilizamos a host network e um mapeamento de portas (parâmetro -p)
 
 Esse mapeamento nada mais é do que regras de firewall utilizando o módulo do kernel linux, netfilter
 
@@ -253,6 +259,17 @@ Banco de dados:
 ```bash
 docker inspect postgres -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
 ```
+### Docker Image
+
+Uma imagem Docker é um pacote executável que inclui tudo o que é necessário para executar um aplicativo, incluindo o código, bibliotecas, variáveis de ambientes e arquivos de configuração.
+
+As imagens do Docker possuem camadas intermediárias que aumentam a capacidade de reutilização, diminuem o uso do disco e aceleram a construção do docker, permitindo que cada etapa seja armazenada em cache. Essas camadas intermediárias não são mostradas por padrão.
+
+![Docker image](img/docker_image.png)
+
+Um ponto interessante é que em um cenário onde temos 1 container com a imagem ubuntu:18.04 por exemplo, ocuparia 200MB ( estamos considerando este tamanho para a imagem citada) somados a quantidade de dados específicos deste container ( vamos considerar 50MB para este exemplo) totalizando 250MB. o mesmo caso com 10 containers serão utilizados os 200MB da imagem somados aos 50MB de cada container em execução, pois suas camadas readonly é compartilhada, totalizando assim 750MB no total.
+
+[Fonte: Docker do básico à certificação docker dca](https://leanpub.com/dockerdca)
 
 ## Analizando a imagem utilizando o dive
 
@@ -851,6 +868,8 @@ TODO
 Para saber mais:
 
 [Docker para desenvolvedores](https://leanpub.com/dockerparadesenvolvedores)
+
+[Docker - Do básico à Certificação Docker DCA](https://leanpub.com/dockerdca)
 
 [Canal no telegram sobre docker](https://t.me/dockerbr)
 
