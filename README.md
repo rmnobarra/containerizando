@@ -112,7 +112,7 @@ Uma imagem nada mais é do que uma representação imutável de como será efeti
 
 O ponto que temos que entender agora é o seguinte: escrevemos um Dockerfile, construímos uma imagem a partir dele executando o comando docker build, e, por fim, criamos e rodamos o container com o comando docker run. O container é o fim enquanto a imagem é o meio.
 
-![Imagem x Container](img/imagem_container.png)
+![Imagem x Container](img/imagem_container.jpg)
 
 9. crie este Dockerfile para a aplicação:
 
