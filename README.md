@@ -102,6 +102,18 @@ O start foi feito com sucesso? Retornou algum erro de conexão com o banco de da
 
 Acesso em: http://localhost:8080/actuator/health
 
+## Dockerfile
+
+O Dockerfile nada mais é do que um meio que utilizamos para criar nossas próprias imagens. Em outras palavras, ele serve como a receita para construir um container.
+
+# Imagem x Container
+
+Uma imagem nada mais é do que uma representação imutável de como será efetivamente construído um container. Por conta disso, nós não rodamos ou inicializamos imagens, nós fazemos isso com os containers.
+
+O ponto que temos que entender agora é o seguinte: escrevemos um Dockerfile, construímos uma imagem a partir dele executando o comando docker build, e, por fim, criamos e rodamos o container com o comando docker run. O container é o fim enquanto a imagem é o meio.
+
+![Imagem x Container](img/imagem_container.png)
+
 9. crie este Dockerfile para a aplicação:
 
 ```Dockerfile
