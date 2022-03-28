@@ -146,6 +146,3 @@ POLICY
 data "aws_iam_role" "CodeBuildKubectlRole" {
   name = "CodeBuildKubectlRole"
 }
-
-
-#"Resource": "arn:aws:iam::208471844409:role/CodeBuildKubectlRole"
